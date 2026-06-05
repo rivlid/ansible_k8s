@@ -1,5 +1,5 @@
 ---
-src_pkg_dir: "/root/"
+src_pkg_dir: "/root"
 k8s_version: "1.36.1-1.1"
 k8s_release: "v1.36.1"
 cni_version: "1.9.1-1.1"
