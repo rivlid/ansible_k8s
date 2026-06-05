@@ -1,0 +1,48 @@
+---
+- name: Copy Kubernetes packages to node
+  ansible.builtin.copy:
+    src: ~/
+    dest: /tmp/{{ item }}
+    mode: '0644'
+  loop:
+    - kubernetes-cni_{{ cni_version }}_amd64.deb
+    - kubelet_{{ k8s_version }}_amd64.deb
+    - kubeadm_{{ k8s_version }}_amd64.deb
+    - kubectl_{{ k8s_version }}_amd64.deb
+
+- name: Install kubernetes-cni
+  ansible.builtin.apt:
+    deb: /tmp/kubernetes-cni_{{ cni_version }}_amd64.deb
+
+- name: Install kubelet, kubeadm, kubectl
+  ansible.builtin.apt:
+    deb: /tmp/{{ item }}
+  loop:
+    - kubelet_{{ k8s_version }}_amd64.deb
+    - kubeadm_{{ k8s_version }}_amd64.deb
+    - kubectl_{{ k8s_version }}_amd64.deb
+
+- name: Hold kubernetes packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Enable kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: yes
+
+- name: Cleanup temp packages
+  ansible.builtin.file:
+    path: /tmp/{{ item }}
+    state: absent
+  loop:
+    - kubernetes-cni_{{ cni_version }}_amd64.deb
+    - kubelet_{{ k8s_version }}_amd64.deb
+    - kubeadm_{{ k8s_version }}_amd64.deb
+    - kubectl_{{ k8s_version }}_amd64.deb
+...

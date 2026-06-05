@@ -1,0 +1,10 @@
+---
+# Плейбук 4: Инициализация кластера
+- name: init cluster
+  hosts: masters
+  become: true
+  gather_facts: yes
+  roles:
+    - init
+    - calico
+...

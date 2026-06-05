@@ -1,0 +1,9 @@
+---
+# Плейбук 1: Подготовка всех нод (мастера + воркеры)
+- name: Prepare all nodes
+  hosts: k8s
+  become: true
+  gather_facts: yes
+  roles:
+    - common
+...

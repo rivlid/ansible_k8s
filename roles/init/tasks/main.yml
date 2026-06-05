@@ -1,0 +1,40 @@
+---
+- name: Check if cluster already initialized
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_initialized
+  when: inventory_hostname == groups['masters'][0]
+
+- name: Initialize Kubernetes cluster
+  ansible.builtin.shell:
+    cmd: >
+      kubeadm init
+      --control-plane-endpoint "{{ vip }}:{{ haproxy_port }}"
+      --upload-certs
+      --pod-network-cidr {{ pod_network_cidr }}
+      --kubernetes-version {{ k8s_release }}
+  register: kubeadm_init_output
+  when: inventory_hostname == groups['masters'][0]
+    and not kubeadm_initialized.stat.exists
+
+- name: Save kubeadm init output
+  ansible.builtin.copy:
+    content: "{{ kubeadm_init_output.stdout }}"
+    dest: /tmp/kubeadm-init.log
+  when: inventory_hostname == groups['masters'][0]
+    and not kubeadm_initialized.stat.exists
+
+- name: Create .kube directory for root
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+  when: inventory_hostname == groups['masters'][0]
+
+- name: Copy admin.conf to root .kube
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+    mode: '0600'
+  when: inventory_hostname == groups['masters'][0]

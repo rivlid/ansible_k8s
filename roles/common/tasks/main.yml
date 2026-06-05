@@ -1,0 +1,64 @@
+---
+- name: Deploy /etc/hosts
+  template:
+    src: hosts
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Load kernel modules config
+  copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Load kernel modules now
+  modprobe:
+    name: "{{ item }}"
+  loop:
+    - overlay
+    - br_netfilter
+
+- name: Set sysctl params
+  copy:
+    dest: /etc/sysctl.d/10-k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.ipv4.ip_forward                 = 1
+
+- name: Apply sysctl
+  command: sysctl -f /etc/sysctl.d/10-k8s.conf
+  changed_when: false
+
+- name: Disable swap now
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable swap in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s+swap\s+.*)$'
+    replace: '#\1'
+
+- name: Install common packages
+  apt:
+    name:
+      - curl
+      - wget
+      - gnupg
+      - sudo
+      - iptables
+    state: present
+    update_cache: true
+
+- name: Install keepalived and haproxy on masters
+  apt:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+  when: inventory_hostname in groups['masters']
+...

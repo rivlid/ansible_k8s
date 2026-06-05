@@ -1,0 +1,10 @@
+---
+# Плейбук 2: Установка K8s и containerd (мастера + воркеры)
+- name: Prepare all nodes
+  hosts: k8s
+  become: true
+  gather_facts: yes
+  roles:
+    - containerd
+    - kubernetes
+...
