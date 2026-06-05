@@ -1,7 +1,7 @@
 ---
 - name: Copy Kubernetes packages to node
   ansible.builtin.copy:
-    src: ~/
+    src: "{{ src_pkg_dir }}/{{ item }}"
     dest: /tmp/{{ item }}
     mode: '0644'
   loop:
