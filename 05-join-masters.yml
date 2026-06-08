@@ -1,0 +1,22 @@
+---
+# Плейбук 5: Присоединение мастеров
+- name: Generate token on master-01
+  hosts: "{{ groups['masters'][0] }}"
+  become: true
+  gather_facts: yes
+  roles:
+    - generate_token
+    
+- name: Join control-plane nodes
+  hosts: masters[1:]
+  become: true
+  tasks:
+    - name: Join master to cluster
+      ansible.builtin.shell:
+        cmd: >
+          {{ hostvars[groups['masters'][0]]['join_command'].stdout }}
+          --control-plane
+          --certificate-key {{ hostvars[groups['masters'][0]]['certificate_key'].stdout }}
+      args:
+        creates: /etc/kubernetes/admin.conf
+...

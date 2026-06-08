@@ -1,0 +1,10 @@
+---
+- name: Generate join token
+  ansible.builtin.shell:
+    cmd: kubeadm token create --ttl 1h --print-join-command
+  register: join_command
+
+- name: Upload certificates and get certificate key
+  ansible.builtin.shell:
+    cmd: kubeadm init phase upload-certs --upload-certs | tail -1
+  register: certificate_key

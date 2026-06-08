@@ -11,16 +11,29 @@
     state: directory
     mode: '0755'
 
+- name: Check containerd config size
+  ansible.builtin.stat:
+    path: /etc/containerd/config.toml
+  register: containerd_config
+
 - name: Generate default containerd config
   ansible.builtin.shell:
     cmd: containerd config default > /etc/containerd/config.toml
-    creates: /etc/containerd/config.toml
+  when: containerd_config.stat.size < 1000
+  notify: Restart containerd
 
 - name: Enable SystemdCgroup in containerd config
   ansible.builtin.replace:
     path: /etc/containerd/config.toml
     regexp: 'SystemdCgroup = false'
     replace: 'SystemdCgroup = true'
+  notify: Restart containerd
+
+- name: Set CNI bin_dir to /opt/cni/bin
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: 'bin_dir = "/usr/lib/cni"'
+    replace: 'bin_dir = "/opt/cni/bin"'
   notify: Restart containerd
 
 - name: Enable and restart containerd

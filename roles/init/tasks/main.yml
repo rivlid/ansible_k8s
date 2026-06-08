@@ -17,13 +17,6 @@
   when: inventory_hostname == groups['masters'][0]
     and not kubeadm_initialized.stat.exists
 
-- name: Save kubeadm init output
-  ansible.builtin.copy:
-    content: "{{ kubeadm_init_output.stdout }}"
-    dest: /tmp/kubeadm-init.log
-  when: inventory_hostname == groups['masters'][0]
-    and not kubeadm_initialized.stat.exists
-
 - name: Create .kube directory for root
   ansible.builtin.file:
     path: /root/.kube

@@ -1,0 +1,19 @@
+---
+# Плейбук 6: Присоединение воркеров
+- name: Generate token on master-01
+  hosts: "{{ groups['masters'][0] }}"
+  become: true
+  gather_facts: yes
+  roles:
+    - generate_token
+    
+- name: Join worker nodes
+  hosts: workers
+  become: true
+  tasks:
+    - name: Join worker to cluster
+      ansible.builtin.shell:
+        cmd: "{{ hostvars[groups['masters'][0]]['join_command'].stdout }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+...
