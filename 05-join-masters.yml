@@ -6,7 +6,8 @@
   gather_facts: yes
   roles:
     - generate_token
-    
+    - upload_certs
+
 - name: Join control-plane nodes
   hosts: masters[1:]
   become: true
@@ -19,4 +20,16 @@
           --certificate-key {{ hostvars[groups['masters'][0]]['certificate_key'].stdout }}
       args:
         creates: /etc/kubernetes/admin.conf
+    - name: Create .kube directory
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        mode: '0755'
+
+    - name: Copy admin.conf to root .kube
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        mode: '0600'
 ...
