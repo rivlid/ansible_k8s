@@ -1,5 +1,30 @@
 ---
-- name: Deploy Calico network plugin
+#- name: Deploy Calico network plugin
+#  ansible.builtin.shell:
+#    cmd: kubectl apply --server=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:{{ apiserver_port }} --insecure-skip-tls-verify -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml
+#  when: inventory_hostname == groups['masters'][0]
+
+- name: Download Calico manifest
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml"
+    dest: "/root/calico.yaml"
+  when: inventory_hostname == groups['masters'][0]
+
+  - name: Set CALICO_IPV4POOL_CIDR name
+  ansible.builtin.replace:
+    path: "/root/calico.yaml"
+    regexp: '# - name: CALICO_IPV4POOL_CIDR'
+    replace: '- name: CALICO_IPV4POOL_CIDR'
+  when: inventory_hostname == groups['masters'][0]
+
+- name: Set CALICO_IPV4POOL_CIDR value
+  ansible.builtin.replace:
+    path: "/root/calico.yaml"
+    regexp: '#   value: "192\.168\.0\.0/16"'
+    replace: '  value: "{{ pod_network_cidr }}"'
+  when: inventory_hostname == groups['masters'][0]
+
+  - name: Deploy Calico network plugin
   ansible.builtin.shell:
-    cmd: kubectl apply --server=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:{{ apiserver_port }} --insecure-skip-tls-verify -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml
+    cmd: kubectl apply --server=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:{{ apiserver_port }} --insecure-skip-tls-verify -f /root/calico.yaml
   when: inventory_hostname == groups['masters'][0]
