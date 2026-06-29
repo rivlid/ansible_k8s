@@ -10,7 +10,7 @@
     dest: "/root/calico.yaml"
   when: inventory_hostname == groups['masters'][0]
 
-  - name: Set CALICO_IPV4POOL_CIDR name
+- name: Set CALICO_IPV4POOL_CIDR name
   ansible.builtin.replace:
     path: "/root/calico.yaml"
     regexp: '# - name: CALICO_IPV4POOL_CIDR'
@@ -24,7 +24,7 @@
     replace: '  value: "{{ pod_network_cidr }}"'
   when: inventory_hostname == groups['masters'][0]
 
-  - name: Deploy Calico network plugin
+- name: Deploy Calico network plugin
   ansible.builtin.shell:
     cmd: kubectl apply --server=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:{{ apiserver_port }} --insecure-skip-tls-verify -f /root/calico.yaml
   when: inventory_hostname == groups['masters'][0]
