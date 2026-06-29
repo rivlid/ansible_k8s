@@ -5,9 +5,9 @@
 #  when: inventory_hostname == groups['masters'][0]
 
 - name: Download Calico manifest
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml"
-    dest: "/root/calico.yaml"
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/calico.yaml -o /root/calico.yaml
+    creates: /root/calico.yaml
   when: inventory_hostname == groups['masters'][0]
 
 - name: Set CALICO_IPV4POOL_CIDR name
