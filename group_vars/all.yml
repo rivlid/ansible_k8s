@@ -4,7 +4,7 @@ k8s_version: "1.36.1-1.1"
 k8s_release: "v1.36.1"
 cni_version: "1.9.1-1.1"
 
-vip: "10.101.0.99"
+vip: "10.69.0.250"
 haproxy_port: 8888
 apiserver_port: 6443
 keepalived_router_id: 5
