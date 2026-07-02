@@ -1,0 +1,8 @@
+---
+# Плейбук 7: Установка MetalLB
+- name: Install MetalLB
+  hosts: masters[0]
+  become: true
+  gather_facts: no
+  roles:
+    - metallb

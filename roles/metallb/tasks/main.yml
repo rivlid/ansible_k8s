@@ -1,0 +1,22 @@
+---
+- name: Copy MetalLB manifest
+  ansible.builtin.copy:
+    src: metallb-fixed.yaml
+    dest: /tmp/metallb-fixed.yaml
+
+- name: Apply MetalLB manifest
+  ansible.builtin.command:
+    cmd: kubectl apply -f /tmp/metallb-fixed.yaml
+
+- name: Wait for MetalLB controller ready
+  ansible.builtin.command:
+    cmd: kubectl rollout status deployment/controller -n metallb-system --timeout=120s
+
+- name: Template MetalLB config
+  ansible.builtin.template:
+    src: metallb-config.yaml
+    dest: /tmp/metallb-config.yaml
+
+- name: Apply MetalLB config
+  ansible.builtin.command:
+    cmd: kubectl apply -f /tmp/metallb-config.yaml

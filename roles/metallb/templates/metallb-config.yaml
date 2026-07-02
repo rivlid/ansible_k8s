@@ -1,0 +1,27 @@
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: linux-gw-253
+  namespace: metallb-system
+spec:
+  myASN: 64513
+  peerASN: 64512
+  peerAddress: {{ metallb_peer_address }}
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: {{ metallb_pool_name }}
+  namespace: metallb-system
+spec:
+  addresses:
+  - {{ metallb_pool_addresses }}
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: bgp-253
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - {{ metallb_pool_name }}
