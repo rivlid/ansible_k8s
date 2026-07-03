@@ -1,0 +1,8 @@
+---
+# Плейбук 8: Установка ingress-nginx
+- name: Install ingress-nginx
+  hosts: masters[0]
+  become: true
+  gather_facts: no
+  roles:
+    - ingress_nginx

@@ -26,3 +26,6 @@ metallb_peer_address: "10.69.0.254"
 metallb_pool_name: "pool-253"
 metallb_pool_addresses: "192.168.253.150-192.168.253.155"
 #metallb_bgp_advertisement_name: "bgp-253"
+
+# Ingress-nginx
+ingress_nginx_replicas: 3

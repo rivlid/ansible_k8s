@@ -1,0 +1,13 @@
+---
+- name: Template ingress-nginx manifest
+  ansible.builtin.template:
+    src: deploy.yaml
+    dest: /tmp/ingress-nginx-deploy.yaml
+
+- name: Apply ingress-nginx manifest
+  ansible.builtin.command:
+    cmd: kubectl apply -f /tmp/ingress-nginx-deploy.yaml
+
+- name: Wait for ingress-nginx controller ready
+  ansible.builtin.command:
+    cmd: kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=120s
