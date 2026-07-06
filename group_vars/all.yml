@@ -29,3 +29,10 @@ metallb_pool_addresses: "192.168.253.150-192.168.253.155"
 
 # Ingress-nginx
 ingress_nginx_replicas: 3
+
+# etcd backup
+etcd_backup_nfs_server: "192.168.10.6"
+etcd_backup_nfs_path: "/mnt/data/backup/k8s"
+etcd_backup_mount: "/mnt/backup/etcd"
+etcd_backup_retention_days: 30
+etcd_backup_cron_hour: "6"

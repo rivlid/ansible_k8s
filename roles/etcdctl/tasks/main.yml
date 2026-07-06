@@ -1,0 +1,14 @@
+---
+- name: Get etcd pod name
+  ansible.builtin.command:
+    cmd: kubectl get pods -n kube-system -l component=etcd -o jsonpath='{.items[0].metadata.name}'
+  register: etcd_pod_name
+
+- name: Copy etcdctl from etcd pod
+  ansible.builtin.command:
+    cmd: kubectl cp kube-system/{{ etcd_pod_name.stdout }}:/usr/local/bin/etcdctl /usr/local/bin/etcdctl
+
+- name: Set etcdctl permissions
+  ansible.builtin.file:
+    path: /usr/local/bin/etcdctl
+    mode: '0755'

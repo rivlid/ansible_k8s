@@ -1,0 +1,9 @@
+---
+# Плейбук 9: Настройка бэкапа etcd
+- name: Setup etcd backup
+  hosts: masters[0]
+  become: true
+  gather_facts: no
+  roles:
+    - etcdctl
+    - etcd_backup

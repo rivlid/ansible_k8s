@@ -1,0 +1,32 @@
+---
+- name: Install nfs-common
+  ansible.builtin.apt:
+    name: nfs-common
+    state: present
+
+- name: Create mount directory
+  ansible.builtin.file:
+    path: "{{ etcd_backup_mount }}"
+    state: directory
+    mode: '0755'
+
+- name: Mount NFS share
+  ansible.posix.mount:
+    path: "{{ etcd_backup_mount }}"
+    src: "{{ etcd_backup_nfs_server }}:{{ etcd_backup_nfs_path }}"
+    fstype: nfs
+    opts: defaults
+    state: mounted
+
+- name: Copy backup script
+  ansible.builtin.template:
+    src: etcd-backup.sh
+    dest: /usr/local/bin/etcd-backup.sh
+    mode: '0755'
+
+- name: Setup cron job
+  ansible.builtin.cron:
+    name: etcd backup
+    hour: "{{ etcd_backup_cron_hour }}"
+    minute: "0"
+    job: /usr/local/bin/etcd-backup.sh >> /var/log/etcd-backup.log 2>&1
