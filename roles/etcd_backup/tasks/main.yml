@@ -8,7 +8,6 @@
   ansible.builtin.file:
     path: "{{ etcd_backup_mount }}"
     state: directory
-    mode: '0755'
 
 - name: Mount NFS share
   ansible.posix.mount:
