@@ -11,8 +11,16 @@ ETCDCTL_API=3 etcdctl snapshot save "$BACKUP_FILE" \
   --key=/etc/kubernetes/pki/etcd/server.key
 
 if [ $? -eq 0 ]; then
-  echo "OK $(date)" > "$BACKUP_DIR/etcd-backup.status"
-  find "$BACKUP_DIR" -name "etcd-*.db" -mtime +{{ etcd_backup_retention_days }} -delete
+  # Верификация снапшота
+  ETCDCTL_API=3 etcdctl snapshot status "$BACKUP_FILE" --write-out=table
+  if [ $? -eq 0 ]; then
+    echo "OK $(date)" > "$BACKUP_DIR/etcd-backup.status"
+    find "$BACKUP_DIR" -name "etcd-*.db" -mtime +{{ etcd_backup_retention_days }} -delete
+  else
+    echo "FAIL verification $(date)" > "$BACKUP_DIR/etcd-backup.status"
+    rm -f "$BACKUP_FILE"
+    exit 1
+  fi
 else
   echo "FAIL $(date)" > "$BACKUP_DIR/etcd-backup.status"
   exit 1

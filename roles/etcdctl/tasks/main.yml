@@ -1,14 +1,27 @@
 ---
-- name: Get etcd pod name
-  ansible.builtin.command:
-    cmd: kubectl get pods -n kube-system -l component=etcd -o jsonpath='{.items[0].metadata.name}'
-  register: etcd_pod_name
+- name: Copy etcd archive to master
+  ansible.builtin.copy:
+    src: "{{ src_pkg_dir }}/etcd-v{{ etcdctl_version }}-linux-amd64.tar.gz"
+    dest: /tmp/etcd-v{{ etcdctl_version }}-linux-amd64.tar.gz
+    mode: '0644'
 
-- name: Copy etcdctl from etcd container
-  ansible.builtin.shell:
-    cmd: kubectl exec -n kube-system {{ etcd_pod_name.stdout }} -- cat /usr/local/bin/etcdctl > /usr/local/bin/etcdctl
+- name: Extract etcdctl binary
+  ansible.builtin.unarchive:
+    src: /tmp/etcd-v{{ etcdctl_version }}-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
 
-- name: Set etcdctl permissions
-  ansible.builtin.file:
-    path: /usr/local/bin/etcdctl
+- name: Install etcdctl
+  ansible.builtin.copy:
+    src: /tmp/etcd-v{{ etcdctl_version }}-linux-amd64/etcdctl
+    dest: /usr/local/bin/etcdctl
     mode: '0755'
+    remote_src: yes
+
+- name: Cleanup temp files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/etcd-v{{ etcdctl_version }}-linux-amd64.tar.gz
+    - /tmp/etcd-v{{ etcdctl_version }}-linux-amd64
