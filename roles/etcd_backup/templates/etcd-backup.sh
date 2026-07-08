@@ -4,7 +4,7 @@ BACKUP_DIR="{{ etcd_backup_mount }}"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="$BACKUP_DIR/etcd-$DATE.db"
 
-etcdctl snapshot save "$BACKUP_FILE" \
+/usr/local/bin/etcdctl snapshot save "$BACKUP_FILE" \
   --endpoints=https://127.0.0.1:2379 \
   --cacert=/etc/kubernetes/pki/etcd/ca.crt \
   --cert=/etc/kubernetes/pki/etcd/server.crt \
