@@ -1,0 +1,11 @@
+---
+# Плейбук 6a: Подготовка воркеров к iSCSI (TrueNAS + democratic-csi)
+# Запускать после 06. Безопасно гонять повторно.
+#   ansible-playbook -i inventory/hosts.ini 06a-workers-iscsi.yml
+#   ansible-playbook -i inventory/hosts.ini 06a-workers-iscsi.yml --limit k8s-worker-22
+- name: Prepare workers for iSCSI
+  hosts: workers
+  become: true
+  roles:
+    - iscsi_client
+...

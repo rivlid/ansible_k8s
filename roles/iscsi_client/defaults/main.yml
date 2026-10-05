@@ -1,0 +1,15 @@
+iscsi_packages:
+  - open-iscsi
+  - multipath-tools
+  - lsscsi
+  - sg3-utils
+
+# IQN ноды = <префикс>:<имя в инвентори>. Уникален и читается в TrueNAS.
+# Нужен, потому что VM из одного шаблона Terraform могут получить одинаковый IQN.
+iscsi_iqn_from_hostname: true
+iscsi_iqn_prefix: "iqn.2005-03.org.open-iscsi"
+
+# Портал TrueNAS для K8s — проверка доступности в конце роли
+iscsi_portal_host: 10.69.0.251
+iscsi_portal_port: 3260
+iscsi_check_portal: true

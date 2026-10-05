@@ -1,0 +1,86 @@
+- name: Пакеты iSCSI и multipath
+  ansible.builtin.apt:
+    name: "{{ iscsi_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Модуль iscsi_tcp — загружать при старте
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/iscsi_tcp.conf
+    content: "iscsi_tcp\n"
+    mode: "0644"
+
+- name: Модуль iscsi_tcp — загрузить сейчас
+  ansible.builtin.command: modprobe iscsi_tcp
+  changed_when: false
+
+- name: multipath.conf
+  ansible.builtin.template:
+    src: multipath.conf.j2
+    dest: /etc/multipath.conf
+    mode: "0644"
+  notify: restart multipathd
+
+# --- IQN ---
+- name: Текущий IQN
+  ansible.builtin.slurp:
+    src: /etc/iscsi/initiatorname.iscsi
+  register: iscsi_iqn_file
+
+- name: Активные iSCSI-сессии (IQN при них не меняем)
+  ansible.builtin.command: iscsiadm -m session
+  register: iscsi_sessions
+  changed_when: false
+  failed_when: false
+
+- name: Вычислить IQN
+  ansible.builtin.set_fact:
+    iscsi_iqn_current: "{{ iscsi_iqn_file.content | b64decode | regex_search('^InitiatorName=(\\S+)', '\\1', multiline=True) | default([''], true) | first }}"
+    iscsi_iqn_wanted: "{{ iscsi_iqn_prefix }}:{{ inventory_hostname }}"
+    iscsi_has_sessions: "{{ iscsi_sessions.rc == 0 and iscsi_sessions.stdout | length > 0 }}"
+
+- name: Записать IQN по имени ноды
+  ansible.builtin.copy:
+    dest: /etc/iscsi/initiatorname.iscsi
+    content: "InitiatorName={{ iscsi_iqn_wanted }}\n"
+    mode: "0600"
+  notify: restart iscsid
+  when:
+    - iscsi_iqn_from_hostname | bool
+    - iscsi_iqn_current != iscsi_iqn_wanted
+    - not iscsi_has_sessions | bool
+
+- name: IQN не изменён — на ноде есть активные сессии
+  ansible.builtin.debug:
+    msg: "ВНИМАНИЕ: IQN {{ iscsi_iqn_current }} оставлен как есть, есть активные iSCSI-сессии"
+  when:
+    - iscsi_iqn_from_hostname | bool
+    - iscsi_iqn_current != iscsi_iqn_wanted
+    - iscsi_has_sessions | bool
+
+# --- Службы ---
+- name: Службы iscsid, open-iscsi, multipathd
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - iscsid
+    - open-iscsi
+    - multipathd
+
+- name: Применить изменения конфигов
+  ansible.builtin.meta: flush_handlers
+
+# --- Проверки ---
+- name: Портал TrueNAS доступен
+  ansible.builtin.wait_for:
+    host: "{{ iscsi_portal_host }}"
+    port: "{{ iscsi_portal_port }}"
+    timeout: 5
+  when: iscsi_check_portal | bool
+
+- name: Итог
+  ansible.builtin.debug:
+    msg: "IQN {{ iscsi_iqn_wanted if (iscsi_iqn_from_hostname | bool and not iscsi_has_sessions | bool) else iscsi_iqn_current }}, портал {{ iscsi_portal_host }}:{{ iscsi_portal_port }} OK"

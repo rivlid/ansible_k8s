@@ -1,0 +1,9 @@
+- name: restart multipathd
+  ansible.builtin.systemd_service:
+    name: multipathd
+    state: restarted
+
+- name: restart iscsid
+  ansible.builtin.systemd_service:
+    name: iscsid
+    state: restarted
