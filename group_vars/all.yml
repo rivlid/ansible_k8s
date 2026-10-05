@@ -39,3 +39,10 @@ etcd_backup_nfs_path: "/mnt/data/backup/k8s"
 etcd_backup_mount: "/mnt/backup/etcd"
 etcd_backup_retention_days: 30
 etcd_backup_cron_hour: "6"
+
+# --- iSCSI (роль iscsi_client, этап 06a) ---
+iscsi_portal_host: 10.69.0.251
+iscsi_portal_port: 3260
+iscsi_check_portal: true
+iscsi_iqn_from_hostname: true
+iscsi_iqn_prefix: "iqn.2005-03.org.open-iscsi"
