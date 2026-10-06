@@ -1,8 +1,0 @@
----
-# Плейбук 10: Установка democratic-csi (тома на TrueNAS по iSCSI)
-- name: Install democratic-csi
-  hosts: masters[0]
-  become: true
-  gather_facts: no
-  roles:
-    - democratic_csi
