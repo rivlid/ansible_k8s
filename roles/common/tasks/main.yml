@@ -51,6 +51,7 @@
       - gnupg
       - sudo
       - iptables
+      - nfs-common
     state: present
     update_cache: true
 
